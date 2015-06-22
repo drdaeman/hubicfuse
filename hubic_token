@@ -146,6 +146,12 @@ RANDOM_STR='TVq6zsU0A_GHIS6iYtbc7uc2c5jdpwIMczyMCsABJXbd'
 # --------------------------------------------------------------------------------------
 # Messages                                                                             |
 # --------------------------------------------------------------------------------------
+# To use file from current directory use I18NDIR=".". Since the file is sourced as
+# a shell script this is not recommended due to security concerns.
+I18N_DIR="/usr/share/hubicfuse/"
+[ ! -e "${I18N_DIR}" ] && I18N_DIR=$(dirname "$0")  # Fallback: script's directory
+I18N_BASENAME=$(basename "$0")
+
 # ENGLISH
 PROMPT_CLIENT_ID="client_id (the app's id): "
 PROMPT_CLIENT_SECRET="client_secret (the app's secret): "
@@ -198,18 +204,18 @@ MSG_HEAD_RESULT='# Here is what your app needs to connect to hubiC:'
 # --------------------  as detected through the LANG environment variable, are         |
 #                       provided, they will be used instead of fallback english        |
 #                       messages defined above.                                        |
-#   The language file must be in the same directory as the script. As LANG is of the   |
+#   The language file must be in directory $I18N_DIR, defined above. As LANG is of the |
 #   form: LANG="fr_FR.UTF-8", we will search first for: script_name_fr_FR.txt, and     |
 #   if it does not exist, for script_name_fr.txt                                       |
 #   The first file that exists will be sourced here. If none exist, or if LANG is not  |
 #   defined in the environment variables, you get the default english messages above.  |
 # --------------------------------------------------------------------------------------
 if [ -n "${LANG}" ]; then
-    LANG_FILE="${0}_$( printf '%.5s' "${LANG}" ).txt"
+    LANG_FILE="${I18N_DIR}/${I18N_BASENAME}_$( printf '%.5s' "${LANG}" ).txt"
     if [ -f "${LANG_FILE}" ]; then
         . "${LANG_FILE}"
     else
-        LANG_FILE="${0}_$( printf '%.2s' "${LANG}" ).txt"
+        LANG_FILE="${I18N_DIR}/${I18N_BASENAME}_$( printf '%.2s' "${LANG}" ).txt"
         [ -f "${LANG_FILE}" ] && . "${LANG_FILE}"
     fi
 fi

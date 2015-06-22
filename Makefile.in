@@ -9,7 +9,9 @@ INSTALL = @INSTALL@
 MKDIR_P = @MKDIR_P@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+share_prefix = @datarootdir@
 bindir = $(DESTDIR)$(exec_prefix)/bin
+hfsharedir = $(DESTDIR)$(share_prefix)/hubicfuse
 
 SOURCES=cloudfsapi.c cloudfuse.c
 HEADERS=cloudfsapi.h
@@ -18,9 +20,13 @@ all: hubicfuse
 
 install: all $(bindir)
 	$(INSTALL) hubicfuse $(bindir)/hubicfuse
+	$(INSTALL) hubic_token $(bindir)/hubic_token
+	$(INSTALL) -D -m 0644 hubic_token_fr.txt $(hfsharedir)/hubic_token_fr.txt
 
 uninstall:
 	/bin/rm -f $(bindir)/hubicfuse
+	/bin/rm -f $(bindir)/hubic_token
+	/bin/rm -rf $(hfsharedir)
 
 $(bindir):
 	$(MKDIR_P) $(bindir)
