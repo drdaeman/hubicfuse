@@ -1,0 +1,14 @@
+Source: hubicfuse
+Section: utils
+Priority: optional
+Maintainer: Aleksey Zhukov <drdaeman@drdaeman.pp.ru>
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, libcurl4-openssl-dev, libxml2-dev, libssl-dev, libfuse-dev, libjson-c-dev, libmagic-dev
+Standards-Version: 3.9.2
+
+Package: hubicfuse
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, fuse (>= 2.7) [linux-any] | fuse4bsd [kfreebsd-any]
+Description: filesystem client for hubiC.
+ .
+ HubicFuse is a FUSE application which provides access to Hubic's
+ cloud files via a mount-point.
