@@ -7,18 +7,34 @@ tenant's containers. Those features are coming from:
 
    https://github.com/LabAdvComp/cloudfuse.git
 
-BUILDING:
-
-    You'll need libcurl, fuse, libssl, and libxml2 (and probably their dev
-    packages) installed to build it.
+GETTING THE SOURCE:
 
     For CentOS or similar:
+
+        $ yum install git
+        $ git clone https://github.com/TurboGit/hubicfuse.git
+        $ cd hubicfuse
+
+    For GNU/Debian or Ubuntu:
+
+        $ apt-get install git
+        $ git clone https://github.com/TurboGit/hubicfuse.git
+        $ cd hubicfuse
+
+BUILDING:
+
+    You'll need libcurl, fuse, libssl, libxml2 and libjson (and probably
+    their dev packages) installed to build it.
+
+    For CentOS or similar:
+
         $ yum install gcc make fuse-devel curl-devel libxml2-devel \
             openssl-devel json-c-devel file-devel
 
         $ PKG_CONFIG_PATH=/lib64/pkgconfig ./configure
 
     For GNU/Debian or Ubuntu:
+
         $ apt-get install gcc make curl libfuse-dev pkg-config \
             libcurl4-openssl-dev libxml2-dev libssl-dev libjson-c-dev \
             libmagic-dev
@@ -27,8 +43,88 @@ BUILDING:
 
     Then just compile and install:
 
-        make
-        sudo make install
+        $ make
+        $ sudo make install
+
+DEBIAN/UBUNTU PACKAGING:
+
+    If you're on Debian, you may want to build a .deb package instead of
+    doing `sudo make install`. The difference is that files installed
+    using package manager are properly tracked, allowing cleanier
+    upgrades and uninstallations.
+
+    There are many ways to build Debian packages, and this document
+    explains how to do this with cowbuilder and git-buildpackage.
+
+    The packaging is on `debian` branch. To build them you don't need to
+    do steps above, but install cowbuilder and git-buildpackage if you don't
+    have those already.
+
+        $ sudo apt-get install cowbuilder git-buildpackage
+
+    Cowbuilder (and pbuilder) are tools that do everything in a clean-room
+    chroot environment, letting you to not install the development packages on
+    your system and ensuring that the package building instructions
+    are consistent.
+
+    You'll need a build environment. The simplest way on Ubuntu is just
+
+        $ sudo cowbuilder --create --components "main universe"
+
+    (For Debian, omit `--components "main universe"` part.)
+
+    But if you want to build for different distribution or architecture,
+    you may need extra options. Refer to https://wiki.debian.org/cowbuilder
+    for more details.
+
+    The actual build process is done using the following command:
+
+        $ gbp buildpackage --git-pristine-tar --git-pristine-tar-commit \
+            --git-upstream-tag='v%(version)s' --git-debian-branch=debian \
+            --git-pbuilder
+
+    As a result you'll have a bunch of files: two source tarballs, build
+    log, changes file, source control file, and the binary package, which
+    you can install:
+
+        $ sudo dpkg -i ../hubicfuse_*.deb
+
+MAINTAINING DEBIAN PACKAGING:
+
+    First of all, for some commands (in particular, dch), tools
+    would need to know your name and email.
+
+        $ export DEBFULLNAME="Maintainer Name"
+        $ export DEBEMAIL="hubicfuse-maintainer@example.org"
+
+    You may consider adding those to your shell's startup scripts,
+    like `~/.profile` (or `~/.bashrc` or whatever you fancy).
+
+    When updating to a new version, the overall process goes like this:
+
+        $ git merge v9.9  # merge new release from master branch
+        $ gbp dch -D unstable --debian-branch=debian --snapshot --auto debian/
+        $ gbp buildpackage --git-ignore-new --git-pbuilder \
+            --git-pristine-tar --git-pristine-tar-commit \
+            --git-upstream-tag='v%(version)s' --git-debian-branch=debian
+
+    And when you're satisfied with the result,
+
+        $ gbp dch -D unstable --release --auto --debian-branch=debian
+        $ git commit -m "Release 9.9-1" debian/changelog
+
+    This README isn't a good place to provide in-depth description of how
+    Debian packaging is done. The suggested reading is git-buildpackage
+    documentation:
+
+    http://honk.sigxcpu.org/projects/git-buildpackage/manual-html/gbp.html
+
+    In particular, section "When upstream uses Git: No upstream tarballs."
+
+    Please note, the branch layout is different. What's referred as the
+    "upstream" sources are kept on `master` branch of the repo, tagged
+    with "v*VERSION*" tags and Debian packaging is done on `debian` branch,
+    tagged as "debian/*VERSION*".
 
 USE:
 
@@ -48,7 +144,7 @@ USE:
 
     Then you can call hubicfuse:
 
-        sudo hubicfuse /mnt/hubic -o noauto_cache,sync_read,allow_other
+        $ sudo hubicfuse /mnt/hubic -o noauto_cache,sync_read,allow_other
 
     And finaly, it can be set in /etc/fstab:
 
@@ -61,14 +157,14 @@ USE AS NON-ROOT:
 
     Add the user into the fuse group:
 
-       $ sudo usermod -a -G fuse [username]
+        $ sudo usermod -a -G fuse [username]
 
     Mount using the above command without the sudo. The .hubicfuse file is
     searched into the user's home.
 
     To unmount use:
 
-       $ fusermount -u [chemin]
+        $ fusermount -u [chemin]
 
 BUGS/SHORTCOMINGS:
 
